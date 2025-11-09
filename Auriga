@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -eq 0 ]]; then
+    TARGET_DIR="."
+else
+    TARGET_DIR="$1"
+    shift
+fi
+
+if [[ ! -d "$TARGET_DIR" ]]; then
+    echo "Auriga: '$TARGET_DIR' is not a directory" >&2
+    exit 1
+fi
+
+TARGET_DIR="$(cd "$TARGET_DIR" && pwd)"
+SRC="$TARGET_DIR/editor.c"
+BIN="$TARGET_DIR/editor"
+
+if [[ ! -f "$SRC" ]]; then
+    echo "Auriga: cannot find editor.c inside $TARGET_DIR" >&2
+    exit 1
+fi
+
+echo "[Auriga] Building $SRC"
+cc -std=c11 -Wall -Wextra -O2 "$SRC" -o "$BIN"
+
+echo "[Auriga] Launching editor (Ctrl-Q twice to exit if dirty)"
+(
+    cd "$TARGET_DIR"
+    exec "$BIN" "$@"
+)
